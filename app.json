@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "SafePath AI",
+    "slug": "safepath-ai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#F4F8F1"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "SafePath AI needs your location to suggest healthier routes."
+      }
+    },
+    "android": {
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
+      "package": "com.kpr123.safepathai"
+    },
+    "extra": {
+      "openWeatherApiKey": "${EXPO_PUBLIC_OPENWEATHER_API_KEY}"
+    },
+    "plugins": [
+      "expo-asset"
+    ]
+  }
+}
