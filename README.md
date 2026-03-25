@@ -85,15 +85,6 @@ npm run start
 
 4. Open Android/iOS simulator or Expo Go.
 
-## Demo Flow (Hackathon)
-
-1. Launch app and select profile: Asthma + High sensitivity.
-2. Show route cards and explain fastest vs healthiest.
-3. Tap Refresh Conditions to show dynamic updates.
-4. Use Voice Assist to narrate safer route decision.
-5. Show scenario simulation and impact dashboard.
-6. Trigger emergency-style messaging by switching to high-risk route profile/data.
-
 ## Notes
 
 - If API is unavailable, SafePath AI automatically uses realistic mock environmental data.

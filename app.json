@@ -26,7 +26,10 @@
       "package": "com.kpr123.safepathai"
     },
     "extra": {
-      "openWeatherApiKey": "${EXPO_PUBLIC_OPENWEATHER_API_KEY}"
+      "openWeatherApiKey": "${EXPO_PUBLIC_OPENWEATHER_API_KEY}",
+      "eas": {
+        "projectId": "23c0a9df-c8e2-4d14-94b0-c5e557fd5aa9"
+      }
     },
     "plugins": [
       "expo-asset"
