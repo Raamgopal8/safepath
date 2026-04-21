@@ -1,7 +1,9 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Animated,
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -11,7 +13,6 @@ import {
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import * as Speech from "expo-speech";
-import MapView, { Marker, Polyline } from "react-native-maps";
 import { Ionicons } from "@expo/vector-icons";
 import AlertBanner from "./src/components/AlertBanner";
 import DashboardCard from "./src/components/DashboardCard";
@@ -23,12 +24,10 @@ import SidebarMenu from "./src/components/SidebarMenu";
 import { theme } from "./src/constants/theme";
 import { AppProvider, useAppState } from "./src/context/AppContext";
 
-function routeColor(route, activeRoute) {
-  if (activeRoute?.id === route.id) {
-    return "#2D9C63"; // Green
-  }
-  return "#D32F2F"; // Red
-}
+const MobileWebView = Platform.select({
+  web: null,
+  default: require("react-native-webview").WebView,
+});
 
 function comparisonText(fastest, selected) {
   if (!fastest || !selected) {
@@ -36,6 +35,12 @@ function comparisonText(fastest, selected) {
   }
 
   return `Fastest: ${fastest.durationMin} min, pollution ${fastest.pollutionIndex}. Selected: ${selected.durationMin} min, pollution ${selected.pollutionIndex}.`;
+}
+
+function buildMapUrl(origin, destination) {
+  const originPoint = `${origin.latitude},${origin.longitude}`;
+  const destinationPoint = `${destination.latitude},${destination.longitude}`;
+  return `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${originPoint}%3B${destinationPoint}#map=12/${origin.latitude}/${origin.longitude}&layers=T`;
 }
 
 function AppContent() {
@@ -60,7 +65,8 @@ function AppContent() {
     dataSource,
   } = useAppState();
 
-  const [sidebarVisible, setSidebarVisible] = React.useState(false);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+  const [isMapLoading, setIsMapLoading] = useState(true);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(18)).current;
@@ -80,21 +86,22 @@ function AppContent() {
     ]).start();
   }, [fadeAnim, slideAnim]);
 
-  const mapRegion = useMemo(() => {
-    const latitude = (origin.latitude + destination.latitude) / 2;
-    const longitude = (origin.longitude + destination.longitude) / 2;
-    return {
-      latitude,
-      longitude,
-      latitudeDelta: Math.abs(origin.latitude - destination.latitude) + 0.03,
-      longitudeDelta: Math.abs(origin.longitude - destination.longitude) + 0.03,
-    };
-  }, [
-    destination.latitude,
-    destination.longitude,
-    origin.latitude,
-    origin.longitude,
-  ]);
+  const mapUrl = useMemo(
+    () => buildMapUrl(origin, destination),
+    [destination.latitude, destination.longitude, origin.latitude, origin.longitude],
+  );
+
+  const heroAnimatedStyle = useMemo(
+    () => ({
+      opacity: fadeAnim,
+      transform: [{ translateY: slideAnim }],
+    }),
+    [fadeAnim, slideAnim],
+  );
+
+  useEffect(() => {
+    setIsMapLoading(true);
+  }, [mapUrl]);
 
   const routeComparison = useMemo(
     () => comparisonText(highlighted.fastest, activeRoute),
@@ -119,7 +126,7 @@ function AppContent() {
 
       <ScrollView contentContainerStyle={styles.content}>
         <Animated.View
-          style={[{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
+          style={[styles.heroAnimated, heroAnimatedStyle]}
         >
           <View style={styles.heroContainer}>
             <View style={styles.heroTexts}>
@@ -137,27 +144,30 @@ function AppContent() {
         </Animated.View>
 
         <View style={styles.mapPanel}>
-          <MapView
-            style={styles.map}
-            initialRegion={mapRegion}
-            region={mapRegion}
-          >
-            <Marker coordinate={origin} title="Current location" />
-            <Marker
-              coordinate={destination}
-              title="Destination"
-              pinColor="#2D9C63"
-            />
-            {routes.map((route) => (
-              <Polyline
-                key={route.id}
-                coordinates={route.points}
-                strokeColor={routeColor(route, activeRoute)}
-                strokeWidth={activeRoute?.id === route.id ? 6 : 4}
-                zIndex={activeRoute?.id === route.id ? 10 : 1}
+          {Platform.OS === "web" ? (
+            <View style={styles.webFrameWrapper}>
+              <iframe
+                title="SafePath directions map"
+                src={mapUrl}
+                onLoad={() => setIsMapLoading(false)}
+                style={styles.webFrame}
               />
-            ))}
-          </MapView>
+            </View>
+          ) : (
+            !!MobileWebView && (
+              <MobileWebView
+                source={{ uri: mapUrl }}
+                onLoadEnd={() => setIsMapLoading(false)}
+                style={styles.mobileWebView}
+              />
+            )
+          )}
+
+          {isMapLoading && (
+            <View style={styles.mapLoadingOverlay}>
+              <ActivityIndicator size="small" color={theme.colors.primary} />
+            </View>
+          )}
         </View>
 
         <HealthProfileCard
@@ -243,6 +253,9 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  heroAnimated: {
+    width: "100%",
+  },
   root: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -302,9 +315,25 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     backgroundColor: theme.colors.panel,
   },
-  map: {
+  mobileWebView: {
     width: "100%",
     height: 280,
+  },
+  webFrameWrapper: {
+    width: "100%",
+    height: 280,
+  },
+  webFrame: {
+    width: "100%",
+    height: "100%",
+    borderWidth: 0,
+    borderColor: "transparent",
+  },
+  mapLoadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.72)",
   },
   sectionHeader: {
     flexDirection: "row",
