@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  Modal,
   Platform,
   ScrollView,
   StatusBar,
@@ -15,6 +16,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import * as Speech from "expo-speech";
 import { Ionicons } from "@expo/vector-icons";
 import AlertBanner from "./src/components/AlertBanner";
+import Chatbot from "./src/components/Chatbot";
 import DashboardCard from "./src/components/DashboardCard";
 import DestinationEditor from "./src/components/DestinationEditor";
 import HealthProfileCard from "./src/components/HealthProfileCard";
@@ -67,6 +69,7 @@ function AppContent() {
 
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [isMapLoading, setIsMapLoading] = useState(true);
+  const [chatbotVisible, setChatbotVisible] = useState(false);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(18)).current;
@@ -137,9 +140,14 @@ function AppContent() {
                 Intelligent Health Routing
               </Text>
             </View>
-            <TouchableOpacity onPress={() => setSidebarVisible(true)} style={styles.menuBtn}>
-              <Ionicons name="menu-outline" size={28} color={theme.colors.textMain} />
-            </TouchableOpacity>
+            <View style={styles.heroButtons}>
+              <TouchableOpacity onPress={() => setChatbotVisible(true)} style={styles.chatBtn}>
+                <Ionicons name="chatbubble-ellipses-outline" size={24} color={theme.colors.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setSidebarVisible(true)} style={styles.menuBtn}>
+                <Ionicons name="menu-outline" size={28} color={theme.colors.textMain} />
+              </TouchableOpacity>
+            </View>
           </View>
         </Animated.View>
 
@@ -238,6 +246,24 @@ function AppContent() {
         visible={sidebarVisible}
         onClose={() => setSidebarVisible(false)}
       />
+
+      <Modal
+        visible={chatbotVisible}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setChatbotVisible(false)}
+      >
+        <Chatbot
+          healthProfile={healthProfile}
+          onUpdateHealthProfile={updateHealthProfile}
+          routes={routes}
+          activeRoute={activeRoute}
+          recommendation={recommendation}
+          alerts={alerts}
+          onRouteSelect={setActiveRouteId}
+          onClose={() => setChatbotVisible(false)}
+        />
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -307,6 +333,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#F7F9F8",
     borderWidth: 1,
     borderColor: theme.colors.border,
+  },
+  heroButtons: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  chatBtn: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: "rgba(45, 156, 99, 0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(45, 156, 99, 0.2)",
   },
   mapPanel: {
     borderRadius: 18,
