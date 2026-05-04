@@ -18,6 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AlertBanner from "./src/components/AlertBanner";
 import Chatbot from "./src/components/Chatbot";
 import DashboardCard from "./src/components/DashboardCard";
+import ContributorsSection from "./src/components/ContributorsSection";
 import DestinationEditor from "./src/components/DestinationEditor";
 import HealthProfileCard from "./src/components/HealthProfileCard";
 import InsightCard from "./src/components/InsightCard";
@@ -240,6 +241,8 @@ function AppContent() {
           selectedRoute={activeRoute}
           fastestRoute={highlighted.fastest}
         />
+
+        <ContributorsSection />
       </ScrollView>
 
       <SidebarMenu
