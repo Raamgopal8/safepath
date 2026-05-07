@@ -114,6 +114,8 @@ export function AppProvider({ children }) {
   const [loadingRoutes, setLoadingRoutes] = useState(false);
   const [dataSource, setDataSource] = useState("mock");
   const [activeRouteId, setActiveRouteId] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     if (routes.length > 0) {
@@ -211,6 +213,20 @@ export function AppProvider({ children }) {
     await saveHealthProfile(profile);
   }
 
+  function login(email, password) {
+    // Simple local authentication (no backend)
+    // Any non-empty email and password is valid for demo purposes
+    if (email && password) {
+      setCurrentUser(email);
+      setIsLoggedIn(true);
+    }
+  }
+
+  function logout() {
+    setCurrentUser(null);
+    setIsLoggedIn(false);
+  }
+
   async function refreshRoutes() {
     if (!healthProfile) {
       return;
@@ -298,6 +314,10 @@ export function AppProvider({ children }) {
     impact,
     forecast: activeRoute?.forecast,
     dataSource,
+    isLoggedIn,
+    currentUser,
+    login,
+    logout,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
