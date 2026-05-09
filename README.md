@@ -85,6 +85,8 @@ npm run start
 
 4. Open Android/iOS simulator or Expo Go.
 
+
+
 ## Notes
 
 - If API is unavailable, SafePath AI automatically uses realistic mock environmental data.
