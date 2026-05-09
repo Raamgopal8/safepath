@@ -27,3 +27,59 @@ export const theme = {
     lg: 22,
   },
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#0f172a",
+    padding: 16,
+  },
+  header: {
+    fontSize: 26,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  subHeader: {
+    fontSize: 14,
+    color: "#94a3b8",
+    marginBottom: 20,
+  },
+  card: {
+    flexDirection: "row",
+    backgroundColor: "#1e293b",
+    padding: 12,
+    borderRadius: 14,
+    marginBottom: 12,
+    alignItems: "center",
+  },
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 12,
+  },
+  info: {
+    flex: 1,
+  },
+  name: {
+    fontSize: 16,
+    color: "#fff",
+    fontWeight: "600",
+  },
+  role: {
+    fontSize: 13,
+    color: "#94a3b8",
+    marginBottom: 8,
+  },
+  button: {
+    backgroundColor: "#111827",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    alignSelf: "flex-start",
+  },
+  btnText: {
+    color: "#fff",
+    fontSize: 13,
+  },
+});
