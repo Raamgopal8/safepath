@@ -299,6 +299,7 @@ export function AppProvider({ children }) {
     forecast: activeRoute?.forecast,
     dataSource,
   };
+  
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

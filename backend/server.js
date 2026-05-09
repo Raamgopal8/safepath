@@ -16,49 +16,62 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// API request logging
+app.use('/api', (req, res, next) => {
+  console.log(`[BACKEND] ${req.method} ${req.originalUrl} - ${new Date().toISOString()}`);
+  next();
+});
+
 // Routes
 app.get('/', (req, res) => {
-  res.json({
-    message: 'SafePath AI Backend API',
-    version: '1.0.0',
-    endpoints: {
-      auth: '/api/auth',
-      routes: '/api/routes',
-    },
-  });
+    res.json({
+        message: 'SafePath AI Backend API',
+        version: '1.0.0',
+        endpoints: {
+            auth: '/api/auth',
+            routes: '/api/routes',
+        },
+    });
 });
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-  });
+    res.json({
+        status: 'OK',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+    });
 });
 
 // API routes
 const authRoutes = require('./routes/authRoutes');
 const routeRoutes = require('./routes/routeRoutes');
+// const environmentRoutes = require('./routes/environmentRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/routes', routeRoutes);
-
+// app.use('/api/environment', environmentRoutes);
+app.get("/api/test", (req, res) => {
+  res.json({
+    success: true,
+    message: "Frontend and backend connected",
+  });
+});
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : {},
-  });
+    console.error(err.stack);
+    res.status(500).json({
+        message: 'Something went wrong!',
+        error: process.env.NODE_ENV === 'development' ? err.message : {},
+    });
 });
 
 // 404 handler
 app.use('*', (req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+    res.status(404).json({ message: 'Route not found' });
 });
 
 app.listen(PORT, () => {
-  console.log(`SafePath Backend server running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`SafePath Backend server running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });

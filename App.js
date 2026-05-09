@@ -269,6 +269,24 @@ function AppContent() {
 }
 
 export default function App() {
+  useEffect(() => {
+  const testBackend = async () => {
+    try {
+      const response = await fetch(
+        "http://10.247.159.88:3000/api/test"
+      );
+
+      const data = await response.json();
+
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+      // console.log("🤑🤑".repeat(100));
+    }
+  };
+
+  testBackend();
+}, []);
   return (
     <SafeAreaProvider>
       <AppProvider>
