@@ -12,6 +12,7 @@ import * as Location from "expo-location";
 import { theme } from "../constants/theme";
 
 export default function DestinationEditor({ origin, onUpdateOrigin, destination, onUpdate, onAiHelp }) {
+  export default function DestinationEditor({ origin, onUpdateOrigin, destination, onUpdate, onAiHelp, onRequireLogin, isLoggedIn }) {
   const [sourceAddress, setSourceAddress] = useState("");
   const [destAddress, setDestAddress] = useState("");
   const [loading, setLoading] = useState(false);
@@ -63,6 +64,13 @@ export default function DestinationEditor({ origin, onUpdateOrigin, destination,
   }, [destination.latitude, destination.longitude, origin?.latitude, origin?.longitude]);
 
   async function apply() {
+        if (!isLoggedIn) {
+          if (onRequireLogin) {
+            onRequireLogin();
+          }
+          return;
+        }
+
     if (!destAddress.trim() || !sourceAddress.trim()) {
       Alert.alert("Missing Input", "Please provide both source and destination.");
       return;

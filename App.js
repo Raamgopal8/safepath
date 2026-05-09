@@ -24,6 +24,7 @@ import HealthProfileCard from "./src/components/HealthProfileCard";
 import InsightCard from "./src/components/InsightCard";
 import RouteCard from "./src/components/RouteCard";
 import SidebarMenu from "./src/components/SidebarMenu";
+import LoginScreen from "./src/components/LoginScreen";
 import { theme } from "./src/constants/theme";
 import { AppProvider, useAppState } from "./src/context/AppContext";
 
@@ -66,11 +67,14 @@ function AppContent() {
     impact,
     forecast,
     dataSource,
+    isLoggedIn,
+    login,
   } = useAppState();
 
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [isMapLoading, setIsMapLoading] = useState(true);
   const [chatbotVisible, setChatbotVisible] = useState(false);
+  const [loginModalVisible, setLoginModalVisible] = useState(false);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(18)).current;
@@ -190,6 +194,8 @@ function AppContent() {
           destination={destination}
           onUpdate={setDestination}
           onAiHelp={() => Alert.alert("SafePath AI Insight", recommendation)}
+                  onRequireLogin={() => setLoginModalVisible(true)}
+                  isLoggedIn={isLoggedIn}
         />
 
         {alerts.map((message, index) => (
@@ -267,6 +273,22 @@ function AppContent() {
           onClose={() => setChatbotVisible(false)}
         />
       </Modal>
+        <Modal
+          visible={loginModalVisible}
+          animationType="fade"
+          transparent={true}
+          onRequestClose={() => setLoginModalVisible(false)}
+        >
+          <View style={styles.loginModalOverlay}>
+            <View style={styles.loginModalContent}>
+              <LoginScreen
+                onLoginSuccess={() => {
+                  setLoginModalVisible(false);
+                }}
+              />
+            </View>
+          </View>
+        </Modal>
     </SafeAreaView>
   );
 }
@@ -401,5 +423,24 @@ const styles = StyleSheet.create({
   },
   routeScroll: {
     marginTop: 6,
+    loginModalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: 20,
+    },
+    loginModalContent: {
+      backgroundColor: theme.colors.background,
+      borderRadius: 20,
+      padding: 24,
+      width: "100%",
+      maxWidth: 400,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 8,
+    },
   },
 });
