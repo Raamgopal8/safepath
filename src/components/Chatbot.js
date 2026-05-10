@@ -493,5 +493,4 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     padding: 8,
   },
-});</content>
-<parameter name="filePath">d:\safepath\src\components\Chatbot.js
+});

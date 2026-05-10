@@ -46,24 +46,33 @@ function mapOpenWeatherAqi(scale) {
 }
 
 export async function fetchEnvironmentAt({ lat, lng, apiKey, seed }) {
+  console.log(`[FRONTEND] fetchEnvironmentAt called for lat: ${lat}, lng: ${lng}, hasApiKey: ${!!apiKey}`);
+
   if (!apiKey) {
+    console.log('[FRONTEND] No API key, returning  data');
     return getMockEnvironmentData(seed);
   }
 
   try {
     const url = `${OPENWEATHER_BASE}?lat=${lat}&lon=${lng}&appid=${apiKey}`;
+    console.log(`[FRONTEND] Fetching from OpenWeather API: ${url}`);
+    
     const response = await fetch(url);
     if (!response.ok) {
+      console.error(`[FRONTEND] OpenWeather API failed with status: ${response.status}`);
       throw new Error("Failed air pollution request");
     }
 
     const data = await response.json();
+    console.log('[FRONTEND] Successfully received data from OpenWeather API');
+    
     const item = data?.list?.[0];
     if (!item) {
+      console.error('[FRONTEND] Missing payload in API response');
       throw new Error("Missing payload");
     }
 
-    return {
+    const result = {
       aqi: mapOpenWeatherAqi(item.main.aqi),
       pm25: item.components.pm2_5 || 0,
       pm10: item.components.pm10 || 0,
@@ -72,7 +81,12 @@ export async function fetchEnvironmentAt({ lat, lng, apiKey, seed }) {
         ((item.components.no2 || 0) + (item.components.so2 || 0)) * 0.5,
       source: "api",
     };
+    
+    console.log('[FRONTEND] Processed environment data:', result);
+    return result;
   } catch (error) {
+    console.error('[FRONTEND] Error in fetchEnvironmentAt:', error.message);
+    console.log('[FRONTEND] Falling back to mock data');
     return getMockEnvironmentData(seed);
   }
 }

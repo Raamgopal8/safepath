@@ -319,6 +319,7 @@ export function AppProvider({ children }) {
     login,
     logout,
   };
+  
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
