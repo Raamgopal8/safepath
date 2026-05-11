@@ -1,3 +1,5 @@
+import { StyleSheet } from "react-native";
+
 export const theme = {
   colors: {
     background: "#F2F7EF",

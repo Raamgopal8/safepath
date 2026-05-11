@@ -1,21 +1,90 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
+import {
+  ExpoSpeechRecognitionModule,
+  useSpeechRecognitionEvent,
+} from "expo-speech-recognition";
 import { theme } from "../constants/theme";
 
-export default function DestinationEditor({ origin, onUpdateOrigin, destination, onUpdate, onAiHelp }) {
-  export default function DestinationEditor({ origin, onUpdateOrigin, destination, onUpdate, onAiHelp, onRequireLogin, isLoggedIn }) {
+function hasBrowserSpeechRecognitionSupport() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return Boolean(window.SpeechRecognition || window.webkitSpeechRecognition);
+}
+
+export default function DestinationEditor({
+  origin,
+  onUpdateOrigin,
+  destination,
+  onUpdate,
+  onAiHelp,
+  onRequireLogin,
+  isLoggedIn,
+}) {
   const [sourceAddress, setSourceAddress] = useState("");
   const [destAddress, setDestAddress] = useState("");
   const [loading, setLoading] = useState(false);
+  const [activeVoiceField, setActiveVoiceField] = useState(null);
+  const [isListening, setIsListening] = useState(false);
+  const activeVoiceFieldRef = useRef(activeVoiceField);
+  const isWeb = Platform.OS === "web";
+  const isSecureWebContext =
+    !isWeb || (typeof window !== "undefined" && window.isSecureContext);
+  const hasWebSpeechSupport = !isWeb || hasBrowserSpeechRecognitionSupport();
+
+  const isVoiceInputSupported = isWeb
+    ? hasWebSpeechSupport && isSecureWebContext
+    : ExpoSpeechRecognitionModule.isRecognitionAvailable();
+
+  useEffect(() => {
+    activeVoiceFieldRef.current = activeVoiceField;
+  }, [activeVoiceField]);
+
+  useSpeechRecognitionEvent("start", () => {
+    setIsListening(true);
+  });
+
+  useSpeechRecognitionEvent("end", () => {
+    setIsListening(false);
+    setActiveVoiceField(null);
+  });
+
+  useSpeechRecognitionEvent("result", (event) => {
+    const transcript = event.results?.[0]?.transcript?.trim();
+    const field = activeVoiceFieldRef.current;
+
+    if (!transcript || !field) {
+      return;
+    }
+
+    if (field === "source") {
+      setSourceAddress(transcript);
+    } else {
+      setDestAddress(transcript);
+    }
+  });
+
+  useSpeechRecognitionEvent("error", (event) => {
+    setIsListening(false);
+    setActiveVoiceField(null);
+
+    if (event.error !== "aborted") {
+      Alert.alert("Voice input error", event.message || "Unable to capture speech.");
+    }
+  });
 
   useEffect(() => {
     async function reverseGeocode() {
@@ -63,19 +132,66 @@ export default function DestinationEditor({ origin, onUpdateOrigin, destination,
     reverseGeocode();
   }, [destination.latitude, destination.longitude, origin?.latitude, origin?.longitude]);
 
-  async function apply() {
-        if (!isLoggedIn) {
-          if (onRequireLogin) {
-            onRequireLogin();
-          }
+  async function startVoiceInput(field) {
+    if (isListening && activeVoiceFieldRef.current === field) {
+      ExpoSpeechRecognitionModule.abort();
+      return;
+    }
+
+    if (isListening && activeVoiceFieldRef.current !== field) {
+      Alert.alert("Voice input in progress", "Stop the current voice input before starting another field.");
+      return;
+    }
+
+    if (isWeb && !hasWebSpeechSupport) {
+      Alert.alert("Voice input unavailable", "Speech recognition is not supported in this browser.");
+      return;
+    }
+
+    if (isWeb && !isSecureWebContext) {
+      Alert.alert("Voice input unavailable", "Speech recognition requires a secure browser context (HTTPS or localhost).");
+      return;
+    }
+
+    if (!isWeb && !ExpoSpeechRecognitionModule.isRecognitionAvailable()) {
+      Alert.alert("Voice input unavailable", "Speech recognition is not available on this device.");
+      return;
+    }
+
+    try {
+      if (!isWeb) {
+        const permission = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+
+        if (!permission.granted) {
+          Alert.alert("Permission required", "Allow microphone and speech recognition access to use voice input.");
           return;
         }
+      }
+
+      setActiveVoiceField(field);
+      ExpoSpeechRecognitionModule.start({
+        lang: "en-US",
+        interimResults: true,
+      });
+    } catch (error) {
+      setActiveVoiceField(null);
+      Alert.alert("Voice input error", error?.message || "Unable to start speech recognition.");
+    }
+  }
+
+  async function apply() {
+    if (!isLoggedIn) {
+      if (onRequireLogin) {
+        onRequireLogin();
+      }
+      return;
+    }
 
     if (!destAddress.trim() || !sourceAddress.trim()) {
       Alert.alert("Missing Input", "Please provide both source and destination.");
       return;
     }
-    
+
     setLoading(true);
     try {
       const destResult = await Location.geocodeAsync(destAddress);
@@ -104,22 +220,56 @@ export default function DestinationEditor({ origin, onUpdateOrigin, destination,
     <View style={styles.container}>
       <Text style={styles.title}>Route Locations</Text>
       <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          value={sourceAddress}
-          onChangeText={setSourceAddress}
-          placeholder="Source (e.g. MG Road)"
-        />
-        <TextInput
-          style={styles.input}
-          value={destAddress}
-          onChangeText={setDestAddress}
-          placeholder="Destination (e.g. Bangalore Palace)"
-        />
+        <View style={styles.inputRow}>
+          <TextInput
+            style={styles.input}
+            value={sourceAddress}
+            onChangeText={setSourceAddress}
+            placeholder="Source (e.g. MG Road)"
+          />
+          <TouchableOpacity
+            style={[
+              styles.voiceButton,
+              isListening && activeVoiceField === "source" && styles.voiceButtonActive,
+            ]}
+            onPress={() => startVoiceInput("source")}
+            accessibilityRole="button"
+            accessibilityLabel="Use voice input for source"
+          >
+            <Ionicons
+              name={isListening && activeVoiceField === "source" ? "mic" : "mic-outline"}
+              size={18}
+              color={isListening && activeVoiceField === "source" ? "#FFFFFF" : theme.colors.primary}
+            />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.inputRow}>
+          <TextInput
+            style={styles.input}
+            value={destAddress}
+            onChangeText={setDestAddress}
+            placeholder="Destination (e.g. Bangalore Palace)"
+          />
+          <TouchableOpacity
+            style={[
+              styles.voiceButton,
+              isListening && activeVoiceField === "destination" && styles.voiceButtonActive,
+            ]}
+            onPress={() => startVoiceInput("destination")}
+            accessibilityRole="button"
+            accessibilityLabel="Use voice input for destination"
+          >
+            <Ionicons
+              name={isListening && activeVoiceField === "destination" ? "mic" : "mic-outline"}
+              size={18}
+              color={isListening && activeVoiceField === "destination" ? "#FFFFFF" : theme.colors.primary}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
       <View style={styles.actions}>
-        <TouchableOpacity 
-          style={styles.buttonPrimary} 
+        <TouchableOpacity
+          style={styles.buttonPrimary}
           onPress={apply}
           disabled={loading}
         >
@@ -154,14 +304,33 @@ const styles = StyleSheet.create({
   inputContainer: {
     gap: 8,
   },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   input: {
-    width: "100%",
+    flex: 1,
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 10,
     backgroundColor: "#FAFCF8",
+  },
+  voiceButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: "#F3F9EF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  voiceButtonActive: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
   },
   actions: {
     flexDirection: "row",

@@ -32,7 +32,14 @@
       }
     },
     "plugins": [
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "SafePath AI needs microphone access to capture voice input.",
+          "speechRecognitionPermission": "SafePath AI needs speech recognition access to fill route fields from your voice."
+        }
+      ]
     ]
   }
 }
