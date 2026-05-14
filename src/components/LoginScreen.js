@@ -10,12 +10,14 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { theme } from "../constants/theme";
 import { useAppState } from "../context/AppContext";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function LoginScreen({ onLoginSuccess }) {
   const { login } = useAppState();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     if (!email.trim()) {
@@ -64,15 +66,27 @@ export default function LoginScreen({ onLoginSuccess }) {
           />
 
           <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your password"
-            placeholderTextColor={theme.colors.textSubtle}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            editable={!loading}
-          />
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Enter your password"
+              placeholderTextColor={theme.colors.textSubtle}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              editable={!loading}
+            />
+            <TouchableOpacity
+              onPress={() => setShowPassword(!showPassword)}
+              style={styles.eyeIcon}
+            >
+              <Ionicons
+                name={showPassword ? "eye-off" : "eye"}
+                size={24}
+                color={theme.colors.textSubtle}
+              />
+            </TouchableOpacity>
+          </View>
 
           <TouchableOpacity
             style={[styles.loginButton, loading && styles.loginButtonDisabled]}
@@ -138,6 +152,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: theme.colors.textMain,
     backgroundColor: "#FAFBFA",
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: 12,
+    backgroundColor: "#FAFBFA",
+  },
+  passwordInput: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: theme.colors.textMain,
+  },
+  eyeIcon: {
+    padding: 10,
   },
   loginButton: {
     backgroundColor: theme.colors.primary,

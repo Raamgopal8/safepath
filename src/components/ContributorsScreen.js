@@ -6,31 +6,51 @@ import { theme } from "../constants/theme";
 const contributors = [
   {
     id: "1",
-    name: "Your Name",
-    role: "Project Lead",
-    image: "https://i.pravatar.cc/150?img=1",
-    github: "https://github.com/yourprofile",
+    name: "Raam Gopal",
+    role: "Founder, Project Lead & Developer",
+    image: "https://github.com/Raamgopal8.png",
+    github: "https://github.com/Raamgopal8",
   },
   {
     id: "2",
-    name: "Member 2",
-    role: "UI/UX Designer",
-    image: "https://i.pravatar.cc/150?img=2",
-    github: "https://github.com/",
+    name: "Dipanita Mondal",
+    role: "Contributor",
+    image: "https://github.com/dipanita45.png",
+    github: "https://github.com/dipanita45",
   },
   {
     id: "3",
-    name: "Member 3",
-    role: "AI Logic Dev",
-    image: "https://i.pravatar.cc/150?img=3",
-    github: "https://github.com/",
+    name: "Venkatesh Devarakonda",
+    role: "Contributor",
+    image: "https://github.com/VenkateshDevarakonda0706.png",
+    github: "https://github.com/VenkateshDevarakonda0706",
+  },
+  {
+    id: "4",
+    name: "Shrey Amritkar",
+    role: "Contributor",
+    image: "https://github.com/shreyAmritkar.png",
+    github: "https://github.com/shreyAmritkar",
+  },
+  {
+    id: "5",
+    name: "Dhruv patel",
+    role: "Contributor",
+    image: "https://github.com/dhruvpatel31.png",
+    github: "https://github.com/dhruvpatel31",
   },
 ];
-
+  
 export default function ContributorsSection() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>👥 Contributors</Text>
+      <View style={styles.headerRow}>
+        <Image 
+          source={require("../../assets/contributors_header.png")} 
+          style={styles.headerIcon} 
+        />
+        <Text style={styles.title}>Contributors</Text>
+      </View>
 
       {contributors.map((item) => (
         <View key={item.id} style={styles.card}>
@@ -55,12 +75,23 @@ export default function ContributorsSection() {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 10,
-    padding: 12,
-    backgroundColor: "#fff",
-    borderRadius: 16,
+    marginTop: 20,
+    padding: 16,
+    backgroundColor: theme.colors.panel,
+    borderRadius: theme.radius.lg,
     borderWidth: 1,
     borderColor: theme.colors.border,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  headerIcon: {
+    width: 40,
+    height: 40,
+    marginRight: 10,
+    borderRadius: 8,
   },
   title: {
     fontSize: 18,
@@ -71,10 +102,17 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F7F9F8",
-    padding: 10,
-    borderRadius: 12,
-    marginBottom: 10,
+    backgroundColor: theme.colors.panelSoft,
+    padding: 12,
+    borderRadius: theme.radius.md,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   avatar: {
     width: 50,
