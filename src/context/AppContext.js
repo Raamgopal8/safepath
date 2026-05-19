@@ -289,6 +289,7 @@ export function AppProvider({ children }) {
     }
   }, [
     healthProfile,
+    isLoggedIn,
     origin.latitude,
     origin.longitude,
     destination.latitude,
