@@ -53,6 +53,12 @@ export default function DestinationEditor({
     activeVoiceFieldRef.current = activeVoiceField;
   }, [activeVoiceField]);
 
+  useEffect(() => {
+    if (isLoggedIn && sourceAddress.trim() && destAddress.trim()) {
+      apply();
+    }
+  }, [isLoggedIn]);
+
   useSpeechRecognitionEvent("start", () => {
     setIsListening(true);
   });
