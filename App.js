@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -279,15 +280,20 @@ function AppContent() {
           transparent={true}
           onRequestClose={() => setLoginModalVisible(false)}
         >
-          <View style={styles.loginModalOverlay}>
-            <View style={styles.loginModalContent}>
-              <LoginScreen
-                onLoginSuccess={() => {
-                  setLoginModalVisible(false);
-                }}
-              />
+          <TouchableWithoutFeedback onPress={() => setLoginModalVisible(false)}>
+            <View style={styles.loginModalOverlay}>
+              <TouchableWithoutFeedback>
+                <View style={styles.loginModalContent}>
+                  <LoginScreen
+                    onLoginSuccess={() => {
+                      setLoginModalVisible(false);
+                    }}
+                    onClose={() => setLoginModalVisible(false)}
+                  />
+                </View>
+              </TouchableWithoutFeedback>
             </View>
-          </View>
+          </TouchableWithoutFeedback>
         </Modal>
     </SafeAreaView>
   );
