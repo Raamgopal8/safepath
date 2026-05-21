@@ -12,7 +12,7 @@ import { theme } from "../constants/theme";
 import { useAppState } from "../context/AppContext";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function LoginScreen({ onLoginSuccess }) {
+export default function LoginScreen({ onLoginSuccess, onClose }) {
   const { login } = useAppState();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -48,6 +48,11 @@ export default function LoginScreen({ onLoginSuccess }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
+        {onClose && (
+          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <Ionicons name="close" size={24} color={theme.colors.textMain} />
+          </TouchableOpacity>
+        )}
         <View style={styles.header}>
           <Text style={styles.title}>SafePath AI</Text>
           <Text style={styles.subtitle}>Intelligent Health Routing</Text>
@@ -111,6 +116,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  closeButton: {
+    position: "absolute",
+    top: -10,
+    right: -10,
+    zIndex: 10,
+    padding: 8,
   },
   content: {
     flex: 1,
